@@ -40,11 +40,12 @@ import ControlPopover from '../ControlPopover/ControlPopover';
 
 import { DateFilterControlProps, FrameType } from './types';
 import {
-  DateFilterTestKey,
+  DATE_FILTER_TEST_KEY,
   fetchTimeRange,
   FRAME_OPTIONS,
   guessFrame,
   useDefaultTimeFilter,
+  useTimeFilterShortcuts,
 } from './utils';
 import {
   CommonFrame,
@@ -52,6 +53,7 @@ import {
   CustomFrame,
   AdvancedFrame,
   DateLabel,
+  ShortcutsFrame,
 } from './components';
 
 const StyledRangeType = styled(Select)`
@@ -159,12 +161,13 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
     isOverflowingFilterBar = false,
   } = props;
   const defaultTimeFilter = useDefaultTimeFilter();
+  const shortcuts = useTimeFilterShortcuts();
 
   const value = props.value ?? defaultTimeFilter;
   const [actualTimeRange, setActualTimeRange] = useState<string>(value);
 
   const [show, setShow] = useState<boolean>(false);
-  const guessedFrame = useMemo(() => guessFrame(value), [value]);
+  const guessedFrame = useMemo(() => guessFrame(value, shortcuts), [value]);
   const [frame, setFrame] = useState<FrameType>(guessedFrame);
   const [lastFetchedTimeRange, setLastFetchedTimeRange] = useState(value);
   const [timeRangeValue, setTimeRangeValue] = useState(value);
@@ -302,7 +305,12 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
       {frame === 'Custom' && (
         <CustomFrame value={timeRangeValue} onChange={setTimeRangeValue} />
       )}
-      {frame === 'No filter' && <div data-test={DateFilterTestKey.NoFilter} />}
+      {frame === 'Shortcuts' && (
+        <ShortcutsFrame value={timeRangeValue} onChange={setTimeRangeValue} />
+      )}
+      {frame === 'No filter' && (
+        <div data-test={DATE_FILTER_TEST_KEY.noFilter} />
+      )}
       <Divider />
       <div>
         <div className="section-title">{t('Actual time range')}</div>
@@ -325,7 +333,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
           cta
           key="cancel"
           onClick={onHide}
-          data-test={DateFilterTestKey.CancelButton}
+          data-test={DATE_FILTER_TEST_KEY.cancelButton}
         >
           {t('CANCEL')}
         </Button>
@@ -335,7 +343,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
           disabled={!validTimeRange}
           key="apply"
           onClick={onSave}
-          data-test={DateFilterTestKey.ApplyButton}
+          data-test={DATE_FILTER_TEST_KEY.applyButton}
         >
           {t('APPLY')}
         </Button>
@@ -376,7 +384,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
           label={actualTimeRange}
           isActive={show}
           isPlaceholder={actualTimeRange === NO_TIME_RANGE}
-          data-test={DateFilterTestKey.PopoverOverlay}
+          data-test={DATE_FILTER_TEST_KEY.popoverOverlay}
           ref={labelRef}
         />
       </Tooltip>
@@ -395,11 +403,11 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
           label={actualTimeRange}
           isActive={show}
           isPlaceholder={actualTimeRange === NO_TIME_RANGE}
-          data-test={DateFilterTestKey.ModalOverlay}
+          data-test={DATE_FILTER_TEST_KEY.modalOverlay}
           ref={labelRef}
         />
       </Tooltip>
-      {/* the zIndex value is from trying so that the Modal doesn't overlay the AdhocFilter */}
+      {/* the zIndex value is from trying so that the Modal doesn't overlay the AdhocFilter when GENERIC_CHART_AXES is enabled */}
       <Modal
         title={title}
         show={show}
